@@ -1,73 +1,78 @@
-# React + TypeScript + Vite
+<div align="center">
+  <img src="public/icon.svg" width="120" alt="ใครช่วยใครพลัส Icon" />
+  <h1>ใครช่วยใครพลัส (KraiChuayKrai Plus)</h1>
+  <p>A smart, privacy-first local finance tracker / แอปจัดการเงินและสิทธิ์คนละครึ่งสุดฉลาด ที่ให้ความสำคัญกับความเป็นส่วนตัวของคุณ</p>
+</div>
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+<br />
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🇹🇭 ภาษาไทย
 
-## React Compiler
+**ใครช่วยใครพลัส (KraiChuayKrai Plus)** เป็นเว็บแอปพลิเคชัน (PWA) สำหรับจดบันทึกรายรับรายจ่าย ที่ออกแบบมาโดยเฉพาะเพื่อรองรับการใช้งานแบบ **"รัฐช่วยจ่าย / เราจ่ายเอง"** (อารมณ์โครงการคนละครึ่ง) พร้อมระบบสแกนสลิปอัตโนมัติด้วย AI ที่ประมวลผลบนเครื่องของคุณ 100% โดยไม่มีการส่งข้อมูลใดๆ ออกสู่อินเทอร์เน็ต!
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### ✨ ฟีเจอร์หลัก (Features)
+- **📊 แดชบอร์ดสรุปยอด:** ติดตามโควตาเงินรัฐบาลรายวันและรายเดือนได้แบบ Real-time พร้อมแถบ Progress bar แจ้งเตือนสัดส่วนเงิน
+- **🧾 สแกนสลิปโอนเงินอัตโนมัติ (Auto Slip Scanner):** เพียงอัปโหลดรูปสลิป แอปจะดึงยอดเงิน วันที่ และเวลา ออกมาให้อัตโนมัติ (ใช้ Tesseract.js)
+- **🔒 ความเป็นส่วนตัวขั้นสูงสุด (100% Local-First):** ข้อมูลประวัติการใช้งาน ยอดเงิน และรูปสลิป จะถูกประมวลผลและเก็บอยู่ใน Browser ของคุณเท่านั้น (Local Storage)
+- **📱 รองรับ PWA (Progressive Web App):** สามารถกด Add to Home Screen บนมือถือ iOS หรือ Android เพื่อใช้งานเหมือนเป็นแอปพลิเคชันในเครื่องได้ทันที
+- **🎨 ดีไซน์สวยงามใช้งานง่าย:** รองรับทั้ง Light/Dark mode อัตโนมัติตามระบบปฏิบัติการ พร้อม UI แบบ Glassmorphism 
 
-## Expanding the ESLint configuration
+### 🛠 ข้อมูลทางเทคนิค (Technical Stack)
+- **Frontend Framework:** React 18 + TypeScript + Vite
+- **State Management:** Zustand (พร้อม Persist middleware สำหรับเซฟลง Local Storage)
+- **Routing:** React Router v6
+- **Styling:** Custom CSS พร้อมระบบ Design Token และ Utility classes
+- **OCR (Optical Character Recognition):** Tesseract.js (รันบน Client-side 100%)
+- **Icons & Formatting:** React Icons, date-fns
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 🛡 ความปลอดภัย (Security)
+แอปพลิเคชันนี้ถูกออกแบบมาแบบ **Zero-Backend** หมายความว่า:
+1. **ไม่มีฐานข้อมูลบนเซิร์ฟเวอร์:** ไม่มีการเก็บข้อมูลการเงินของคุณไว้ที่ส่วนกลาง
+2. **รูปสลิปไม่เคยหลุดไปอินเทอร์เน็ต:** การทำ OCR สกัดข้อความจากสลิป เกิดขึ้นในหน่วยความจำ RAM ของอุปกรณ์คุณ (Client-side execution) ทันทีที่อ่านเสร็จ รูปจะถูกทิ้งทันที
+3. **การล้างข้อมูล:** หากคุณล้างข้อมูลประวัติการท่องเว็บ (Clear Browsing Data) ข้อมูลแอปจะถูกรีเซ็ตใหม่ทั้งหมด
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### 🚀 วิธีการติดตั้งและรันในเครื่อง (How to Use locally)
+1. โคลนโปรเจกต์นี้ลงมาที่เครื่อง `git clone https://github.com/loncsiri/kraichuaykrai.git`
+2. เข้าไปที่โฟลเดอร์โปรเจกต์ `cd kraichuaykrai`
+3. ติดตั้ง Dependencies `npm install`
+4. รันเซิร์ฟเวอร์จำลอง `npm run dev`
+5. เปิดเบราว์เซอร์และเข้าไปที่ `http://localhost:5173`
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+---
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 🇬🇧 English
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+**KraiChuayKrai Plus** is a local-first, Progressive Web App (PWA) designed for tracking daily/monthly personal finances, specifically optimized for co-payment schemes (e.g., Government subsidy / User payment). It comes with a built-in auto slip scanner powered by client-side AI.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### ✨ Features
+- **📊 Dashboard Overview:** Track daily and monthly subsidies, purchase limits, and actual wallet balances with intuitive progress bars.
+- **🧾 Auto Slip Scanner:** Upload a payment slip and instantly extract the total amount, date, and time via OCR (Powered by Tesseract.js).
+- **🔒 Absolute Privacy (Local-First):** All your financial data, transaction histories, and images are processed and stored exclusively on your device's Local Storage.
+- **📱 PWA Support:** Install it directly to your iOS/Android home screen for a native app-like experience.
+- **🎨 Premium UI/UX:** Responsive glassmorphism design that fully supports system-level Light/Dark modes.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### 🛠 Technical Stack
+- **Frontend:** React 18, TypeScript, Vite
+- **State Management:** Zustand (with Persist middleware)
+- **Routing:** React Router v6
+- **Styling:** Custom CSS Design System
+- **OCR:** Tesseract.js (Client-side execution)
+- **Utils:** React Icons, date-fns
+
+### 🛡 Security & Privacy
+This application operates on a **Zero-Backend** architecture:
+1. **No External Database:** Your financial records are never uploaded to any remote server.
+2. **Client-Side OCR Processing:** The slip scanning process happens entirely within your device's memory. Images are never transmitted over the network.
+3. **Data Ownership:** You maintain full control. Clearing your browser's local storage will permanently wipe the application's data.
+
+### 🚀 Local Setup & Development
+1. Clone the repository: `git clone https://github.com/loncsiri/kraichuaykrai.git`
+2. Navigate to the directory: `cd kraichuaykrai`
+3. Install dependencies: `npm install`
+4. Start the development server: `npm run dev`
+5. Open your browser at `http://localhost:5173`
+
+---
+*Deployed with ❤️ on [Vercel](https://vercel.com)*
