@@ -3,8 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAppStore } from '../store/useAppStore';
 import { calculateRemainingGov, calculateTransactionSplit } from '../utils/calculations';
 import { FiArrowLeft, FiAlertCircle, FiClock, FiUpload, FiLoader } from 'react-icons/fi';
-import { format } from 'date-fns';
-import { useRef } from 'react';
+import { format, parseISO } from 'date-fns';
+import { useRef, useEffect } from 'react';
 import { scanSlip } from '../utils/slipReader';
 
 export const AddTransaction = () => {
@@ -12,6 +12,7 @@ export const AddTransaction = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const initialType = (searchParams.get('type') as 'expense' | 'topup') || 'expense';
+  const editId = searchParams.get('editId');
 
   const [type, setType] = useState<'expense' | 'topup'>(initialType);
   const [amount, setAmount] = useState<string>('');
@@ -23,6 +24,22 @@ export const AddTransaction = () => {
   
   const [note, setNote] = useState<string>('');
 
+  useEffect(() => {
+    if (editId) {
+      const tx = store.transactions.find(t => t.id === editId);
+      if (tx) {
+        setType(tx.type);
+        setAmount((tx.type === 'expense' ? tx.totalAmount : tx.userAmount).toString());
+        setTitle(tx.title);
+        setCategory(tx.category || 'อาหารและเครื่องดื่ม');
+        const dt = parseISO(tx.timestamp);
+        setDate(format(dt, 'yyyy-MM-dd'));
+        setTime(format(dt, 'HH:mm'));
+        setNote(tx.note || '');
+      }
+    }
+  }, [editId]); // Intentionally omitting store.transactions to only run on mount
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [scanProgress, setScanProgress] = useState(0);
@@ -33,6 +50,10 @@ export const AddTransaction = () => {
     ? store.settings.categories 
     : ['อาหารและเครื่องดื่ม', 'เดินทาง', 'ของใช้', 'ทั่วไป'];
 
+  const recentTitles = useMemo(() => {
+    return Array.from(new Set(store.transactions.map(t => t.title).filter(Boolean)));
+  }, [store.transactions]);
+
   const { availableGovToday } = useMemo(() => calculateRemainingGov(store), [store]);
 
   const { govAmount, userAmount } = useMemo(() => {
@@ -40,7 +61,17 @@ export const AddTransaction = () => {
     return calculateTransactionSplit(numAmount, availableGovToday, store);
   }, [numAmount, type, availableGovToday, store]);
 
-  const isWalletSufficient = type === 'topup' || store.walletBalance >= userAmount;
+  const isWalletSufficient = useMemo(() => {
+    if (type === 'topup') return true;
+    let balance = store.walletBalance;
+    if (editId) {
+      const oldTx = store.transactions.find(t => t.id === editId);
+      if (oldTx && oldTx.type === 'expense') balance += oldTx.userAmount;
+      if (oldTx && oldTx.type === 'topup') balance -= oldTx.userAmount;
+    }
+    return balance >= userAmount;
+  }, [type, store.walletBalance, editId, store.transactions, userAmount]);
+
   const isFormValid = numAmount > 0 && date && time;
 
   const handleSave = () => {
@@ -50,7 +81,7 @@ export const AddTransaction = () => {
     const timestamp = new Date(`${date}T${time}`).toISOString();
     const finalTitle = title.trim() || (type === 'expense' ? 'รายจ่าย' : 'เติมเงิน');
 
-    store.addTransaction({
+    const txData = {
       timestamp,
       type,
       title: finalTitle,
@@ -59,7 +90,13 @@ export const AddTransaction = () => {
       userAmount: type === 'expense' ? userAmount : numAmount,
       category: type === 'expense' ? category : '',
       note: note.trim()
-    });
+    };
+
+    if (editId) {
+      store.updateTransaction(editId, txData);
+    } else {
+      store.addTransaction(txData);
+    }
 
     navigate(-1);
   };
@@ -101,7 +138,9 @@ export const AddTransaction = () => {
         <button className="btn-icon" onClick={() => navigate(-1)}>
           <FiArrowLeft size={24} />
         </button>
-        <h2 className="font-bold text-xl">{type === 'expense' ? 'เพิ่มรายการใช้จ่าย' : 'เติมเงิน'}</h2>
+        <h2 className="font-bold text-xl">
+          {editId ? 'แก้ไขรายการ' : (type === 'expense' ? 'เพิ่มรายการใช้จ่าย' : 'เติมเงิน')}
+        </h2>
       </div>
 
       <div className="glass p-4">
@@ -198,7 +237,11 @@ export const AddTransaction = () => {
             value={title} 
             onChange={(e) => setTitle(e.target.value)} 
             placeholder="เช่น ซื้อข้าว, เติมน้ำมัน" 
+            list="title-suggestions"
           />
+          <datalist id="title-suggestions">
+            {recentTitles.map(t => <option key={t} value={t} />)}
+          </datalist>
         </div>
 
         {type === 'expense' && (

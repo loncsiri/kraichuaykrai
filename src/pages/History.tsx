@@ -1,11 +1,13 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../store/useAppStore';
-import { FiShoppingBag, FiPlus, FiFilter, FiTrash2 } from 'react-icons/fi';
+import { FiShoppingBag, FiPlus, FiFilter, FiTrash2, FiEdit } from 'react-icons/fi';
 import { format, parseISO } from 'date-fns';
 import { th } from 'date-fns/locale';
 
 export const History = () => {
   const store = useAppStore();
+  const navigate = useNavigate();
   const [filterMonth, setFilterMonth] = useState<string>('all');
 
   const formatMoney = (amount: number) => {
@@ -176,7 +178,13 @@ export const History = () => {
                       หมายเหตุ: {tx.note}
                     </div>
                   )}
-                  <div className="flex justify-end mt-1">
+                  <div className="flex justify-end mt-1 gap-4">
+                    <button 
+                      onClick={() => navigate(`/add?editId=${tx.id}`)}
+                      className="flex items-center gap-1 text-xs text-primary opacity-70 hover:opacity-100 transition-opacity"
+                    >
+                      <FiEdit size={14} /> แก้ไขรายการ
+                    </button>
                     <button 
                       onClick={() => {
                         if (window.confirm('คุณต้องการลบรายการนี้ใช่หรือไม่? ยอดเงินจะถูกคืนเข้ากระเป๋า')) {

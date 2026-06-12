@@ -30,6 +30,7 @@ export interface AppState {
   settings: Settings;
   transactions: Transaction[];
   addTransaction: (tx: Omit<Transaction, 'id'>) => void;
+  updateTransaction: (id: string, updatedTx: Omit<Transaction, 'id'>) => void;
   deleteTransaction: (id: string) => void;
   updateSettings: (settings: Partial<Settings>) => void;
   setTheme: (theme: 'light' | 'dark') => void;
@@ -89,6 +90,35 @@ export const useAppStore = create<AppState>()(
 
           return {
             transactions: state.transactions.filter((t) => t.id !== id),
+            walletBalance: newBalance,
+          };
+        });
+      },
+
+      updateTransaction: (id, updatedTxData) => {
+        set((state) => {
+          const oldTx = state.transactions.find((t) => t.id === id);
+          if (!oldTx) return state;
+
+          // Revert old transaction effect
+          let newBalance = state.walletBalance;
+          if (oldTx.type === 'expense') {
+            newBalance += oldTx.userAmount;
+          } else if (oldTx.type === 'topup') {
+            newBalance -= oldTx.userAmount;
+          }
+
+          // Apply new transaction effect
+          if (updatedTxData.type === 'expense') {
+            newBalance -= updatedTxData.userAmount;
+          } else if (updatedTxData.type === 'topup') {
+            newBalance += updatedTxData.userAmount;
+          }
+
+          const newTx: Transaction = { ...updatedTxData, id };
+
+          return {
+            transactions: state.transactions.map((t) => t.id === id ? newTx : t),
             walletBalance: newBalance,
           };
         });
