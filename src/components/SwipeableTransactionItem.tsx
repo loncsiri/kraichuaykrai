@@ -57,11 +57,11 @@ export const SwipeableTransactionItem: React.FC<Props> = ({ tx, formatMoney, onE
   };
 
   return (
-    <div className="relative overflow-hidden" style={{ borderRadius: '16px' }}>
+    <div className="relative overflow-hidden" style={{ borderRadius: '16px', width: '100%' }}>
       <div 
         className="flex"
         style={{ 
-          width: `calc(100% + ${ACTIONS_WIDTH}px)`,
+          width: '100%',
           transform: `translateX(${offsetX}px)`,
           transition: startXRef.current !== null ? 'none' : 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)',
           touchAction: 'pan-y'
@@ -73,7 +73,7 @@ export const SwipeableTransactionItem: React.FC<Props> = ({ tx, formatMoney, onE
         {/* Foreground Card */}
         <div 
           className="glass p-4 flex-col gap-2"
-          style={{ width: '100%', cursor: 'pointer' }}
+          style={{ width: '100%', flexShrink: 0, cursor: 'pointer' }}
           onClick={toggleOpen}
         >
           <div className="flex justify-between items-start">
