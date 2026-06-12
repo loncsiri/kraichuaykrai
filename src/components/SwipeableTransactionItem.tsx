@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { FiShoppingBag, FiPlus, FiTrash2, FiEdit } from 'react-icons/fi';
 import { format, parseISO } from 'date-fns';
-import { Transaction } from '../store/useAppStore';
+import type { Transaction } from '../store/useAppStore';
 
 interface Props {
   tx: Transaction;
