@@ -204,16 +204,17 @@ export const AddTransaction = () => {
         {type === 'expense' && (
           <div className="mb-4">
             <label className="text-sm text-muted mb-1 block">หมวดหมู่</label>
-            <div className="flex flex-wrap gap-2">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
               {activeCategories.map(cat => (
                 <button 
                   key={cat}
                   className={category === cat ? 'btn-primary' : 'glass'}
                   style={{ 
-                    padding: '6px 12px', 
+                    padding: '8px 12px', 
                     fontSize: '14px', 
-                    borderRadius: '20px',
-                    border: category === cat ? 'none' : '1px solid var(--card-border)'
+                    borderRadius: '12px',
+                    border: category === cat ? 'none' : '1px solid var(--card-border)',
+                    width: '100%'
                   }}
                   onClick={() => setCategory(cat)}
                 >
@@ -233,29 +234,12 @@ export const AddTransaction = () => {
               onChange={(e) => setDate(e.target.value)} 
               style={{ marginBottom: 0, flex: 1.5 }}
             />
-            <div className="flex gap-1 items-center" style={{ flex: 1 }}>
-              <select 
-                value={time.split(':')[0] || '00'} 
-                onChange={(e) => setTime(`${e.target.value}:${time.split(':')[1] || '00'}`)}
-                style={{ marginBottom: 0, padding: '12px 8px' }}
-              >
-                {Array.from({length: 24}).map((_, i) => {
-                  const val = i.toString().padStart(2, '0');
-                  return <option key={val} value={val}>{val}</option>;
-                })}
-              </select>
-              <span>:</span>
-              <select 
-                value={time.split(':')[1] || '00'} 
-                onChange={(e) => setTime(`${time.split(':')[0] || '00'}:${e.target.value}`)}
-                style={{ marginBottom: 0, padding: '12px 8px' }}
-              >
-                {Array.from({length: 60}).map((_, i) => {
-                  const val = i.toString().padStart(2, '0');
-                  return <option key={val} value={val}>{val}</option>;
-                })}
-              </select>
-            </div>
+            <input 
+              type="time" 
+              value={time} 
+              onChange={(e) => setTime(e.target.value)} 
+              style={{ marginBottom: 0, flex: 1 }}
+            />
             <button className="glass" style={{ padding: '12px' }} onClick={setNow} title="ตอนนี้">
               <FiClock />
             </button>
