@@ -42,25 +42,25 @@ export const SwipeableTransactionItem: React.FC<Props> = ({ tx, formatMoney, onE
               </div>
             </div>
           </div>
-          <div className="text-right" style={{ fontVariantNumeric: 'tabular-nums' }}>
-            <div className={`grid grid-cols-[1fr_32px] gap-2 items-baseline w-[130px] font-bold text-xl ${tx.type === 'topup' ? 'text-success' : ''}`}>
-              <span className="text-right">{tx.type === 'topup' ? '+' : '-'}{formatMoney(tx.type === 'topup' ? tx.userAmount : tx.totalAmount)}</span>
-              <span className="text-left text-base">บาท</span>
+          <div className="flex flex-col items-end flex-shrink-0" style={{ minWidth: '160px' }}>
+            <div className={`flex justify-end items-baseline font-bold text-xl ${tx.type === 'topup' ? 'text-success' : ''}`}>
+              <span className="text-right tabular-nums" style={{ marginRight: '12px' }}>{tx.type === 'topup' ? '+' : '-'}{formatMoney(tx.type === 'topup' ? tx.userAmount : tx.totalAmount)}</span>
+              <span className="text-left text-base" style={{ width: '32px' }}>บาท</span>
             </div>
             {tx.type === 'expense' && (
-              <div className="text-sm text-muted mt-1 flex-col gap-1 items-end" style={{ display: 'flex' }}>
-                <div className="flex justify-between items-center" style={{ width: '100%' }}>
+              <div className="text-sm text-muted mt-1 flex flex-col gap-1 w-full pl-4">
+                <div className="flex justify-between items-baseline w-full">
                   <span>รัฐ:</span>
-                  <div className="grid grid-cols-[1fr_32px] gap-2 items-baseline w-[130px] text-primary font-semibold">
-                    <span className="text-right">{formatMoney(tx.govAmount)}</span>
-                    <span className="text-left">บาท</span>
+                  <div className="flex justify-end items-baseline text-primary font-semibold">
+                    <span className="text-right tabular-nums" style={{ marginRight: '12px' }}>{formatMoney(tx.govAmount)}</span>
+                    <span className="text-left" style={{ width: '32px' }}>บาท</span>
                   </div>
                 </div>
-                <div className="flex justify-between items-center" style={{ width: '100%' }}>
+                <div className="flex justify-between items-baseline w-full">
                   <span>เรา:</span>
-                  <div className="grid grid-cols-[1fr_32px] gap-2 items-baseline w-[130px] font-semibold">
-                    <span className="text-right">{formatMoney(tx.userAmount)}</span>
-                    <span className="text-left">บาท</span>
+                  <div className="flex justify-end items-baseline font-semibold">
+                    <span className="text-right tabular-nums" style={{ marginRight: '12px' }}>{formatMoney(tx.userAmount)}</span>
+                    <span className="text-left" style={{ width: '32px' }}>บาท</span>
                   </div>
                 </div>
               </div>
