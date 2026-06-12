@@ -76,22 +76,22 @@ export const History = () => {
             <div className="flex justify-between items-center text-base">
               <span className="text-muted font-medium">รัฐช่วยจ่าย:</span>
               <div className="flex items-center">
-                <span className="text-primary font-bold text-lg text-right" style={{ width: '100px' }}>{formatMoney(totalGovPaid)}</span>
-                <span className="text-primary font-bold text-lg text-left ml-2" style={{ width: '40px' }}>บาท</span>
+                <span className="inline-block text-primary font-bold text-lg text-right" style={{ width: '90px' }}>{formatMoney(totalGovPaid)}</span>
+                <span className="inline-block text-primary font-bold text-lg text-left ml-2" style={{ width: '32px' }}>บาท</span>
               </div>
             </div>
             <div className="flex justify-between items-center text-base">
               <span className="text-muted font-medium">เราจ่ายเอง:</span>
               <div className="flex items-center">
-                <span className="font-bold text-lg text-right" style={{ width: '100px' }}>{formatMoney(totalUserPaid)}</span>
-                <span className="font-bold text-lg text-left ml-2" style={{ width: '40px' }}>บาท</span>
+                <span className="inline-block font-bold text-lg text-right" style={{ width: '90px' }}>{formatMoney(totalUserPaid)}</span>
+                <span className="inline-block font-bold text-lg text-left ml-2" style={{ width: '32px' }}>บาท</span>
               </div>
             </div>
             <div className="flex justify-between items-center mt-2 pt-3 border-t border-gray-200 dark:border-gray-700">
               <span className="font-bold text-xl">ยอดรวมทั้งสิ้น:</span>
               <div className="flex items-center">
-                <span className="font-bold text-3xl text-right" style={{ width: '120px' }}>{formatMoney(totalExpense)}</span>
-                <span className="font-bold text-xl text-left ml-2" style={{ width: '40px' }}>บาท</span>
+                <span className="inline-block font-bold text-3xl text-right" style={{ width: '120px' }}>{formatMoney(totalExpense)}</span>
+                <span className="inline-block font-bold text-xl text-left ml-2" style={{ width: '32px' }}>บาท</span>
               </div>
             </div>
           </div>

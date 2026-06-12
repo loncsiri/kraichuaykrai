@@ -44,23 +44,23 @@ export const SwipeableTransactionItem: React.FC<Props> = ({ tx, formatMoney, onE
           </div>
           <div className="text-right" style={{ fontVariantNumeric: 'tabular-nums' }}>
             <div className={`flex justify-end items-center font-bold text-xl ${tx.type === 'topup' ? 'text-success' : ''}`}>
-              <span className="text-right" style={{ width: '100px' }}>{tx.type === 'topup' ? '+' : '-'}{formatMoney(tx.type === 'topup' ? tx.userAmount : tx.totalAmount)}</span>
-              <span className="text-left ml-2" style={{ width: '40px' }}>บาท</span>
+              <span className="inline-block text-right" style={{ width: '90px' }}>{tx.type === 'topup' ? '+' : '-'}{formatMoney(tx.type === 'topup' ? tx.userAmount : tx.totalAmount)}</span>
+              <span className="inline-block text-left ml-2" style={{ width: '32px' }}>บาท</span>
             </div>
             {tx.type === 'expense' && (
               <div className="text-sm text-muted mt-1 flex-col gap-1 items-end" style={{ display: 'flex' }}>
-                <div className="flex justify-between items-center" style={{ width: '150px' }}>
+                <div className="flex justify-between items-center" style={{ width: '100%' }}>
                   <span>รัฐ:</span>
                   <div className="flex items-center text-primary font-semibold">
-                    <span className="text-right" style={{ width: '60px' }}>{formatMoney(tx.govAmount)}</span>
-                    <span className="text-left ml-2" style={{ width: '30px' }}>บาท</span>
+                    <span className="inline-block text-right" style={{ width: '90px' }}>{formatMoney(tx.govAmount)}</span>
+                    <span className="inline-block text-left ml-2" style={{ width: '32px' }}>บาท</span>
                   </div>
                 </div>
-                <div className="flex justify-between items-center" style={{ width: '150px' }}>
+                <div className="flex justify-between items-center" style={{ width: '100%' }}>
                   <span>เรา:</span>
                   <div className="flex items-center font-semibold">
-                    <span className="text-right" style={{ width: '60px' }}>{formatMoney(tx.userAmount)}</span>
-                    <span className="text-left ml-2" style={{ width: '30px' }}>บาท</span>
+                    <span className="inline-block text-right" style={{ width: '90px' }}>{formatMoney(tx.userAmount)}</span>
+                    <span className="inline-block text-left ml-2" style={{ width: '32px' }}>บาท</span>
                   </div>
                 </div>
               </div>
