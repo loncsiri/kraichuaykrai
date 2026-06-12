@@ -154,6 +154,7 @@ export const AddTransaction = () => {
           <label className="text-sm text-muted mb-1 block">จำนวนเงิน (บาท)</label>
           <input 
             type="number" 
+            inputMode="decimal"
             value={amount} 
             onChange={(e) => setAmount(e.target.value)} 
             placeholder="0.00" 
