@@ -307,7 +307,7 @@ export const Settings = () => {
         
         <div className="flex gap-2 mb-4">
           <button className="btn-primary flex-1" style={{ background: 'var(--secondary-color)' }} onClick={exportCSV}>
-            <FiDownload /> Export CSV
+            <FiUpload /> Export CSV
           </button>
           
           <input 
@@ -318,7 +318,7 @@ export const Settings = () => {
             style={{ display: 'none' }} 
           />
           <button className="glass flex-1" onClick={() => fileInputRef.current?.click()} style={{ border: '1px solid var(--text-muted)' }}>
-            <FiUpload /> Import CSV
+            <FiDownload /> Import CSV
           </button>
         </div>
 
