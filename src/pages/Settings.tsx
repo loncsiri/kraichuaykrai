@@ -160,7 +160,7 @@ export const Settings = () => {
           />
         </div>
 
-        <div className="flex gap-2 mb-4">
+        <div className="flex flex-col gap-3 mb-4">
           <div className="flex-1">
             <label className="text-sm text-muted mb-1 block">เดือนที่เริ่ม</label>
             <input 
