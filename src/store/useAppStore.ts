@@ -43,6 +43,7 @@ export interface AppState {
   setGoogleSheetsConfig: (url: string, secret: string, enabled: boolean) => void;
   setSyncStatus: (status: SyncStatus, error?: string | null) => void;
   syncAllToGoogleSheets: () => Promise<void>;
+  pullFromGoogleSheets: () => Promise<void>;
 
   addTransaction: (tx: Omit<Transaction, 'id'>) => void;
   updateTransaction: (id: string, updatedTx: Omit<Transaction, 'id'>) => void;
@@ -95,6 +96,48 @@ export const useAppStore = create<AppState>()(
           state.transactions
         );
         set({ syncStatus: result.success ? 'success' : 'error', syncError: result.success ? null : result.message });
+        
+        if (result.success) {
+          setTimeout(() => {
+            if (get().syncStatus === 'success') set({ syncStatus: 'idle' });
+          }, 3000);
+        }
+      },
+
+      pullFromGoogleSheets: async () => {
+        const state = get();
+        if (!state.googleSheetsEnabled || !state.googleSheetUrl || !state.googleSecretKey) return;
+        
+        set({ syncStatus: 'syncing', syncError: null });
+        const result = await syncToGoogleSheets(
+          state.googleSheetUrl, 
+          state.googleSecretKey, 
+          'pull', 
+          null
+        );
+        
+        if (result.success && result.data && result.data.transactions) {
+          const fetchedTxs = result.data.transactions;
+          
+          // Recalculate wallet balance based on pulled transactions
+          let newBalance = 0;
+          fetchedTxs.forEach((tx: any) => {
+            if (tx.type === 'topup') {
+              newBalance += Number(tx.userAmount) || 0;
+            } else if (tx.type === 'expense') {
+              newBalance -= Number(tx.userAmount) || 0;
+            }
+          });
+          
+          set({ 
+            transactions: fetchedTxs,
+            walletBalance: newBalance,
+            syncStatus: 'success', 
+            syncError: null 
+          });
+        } else {
+          set({ syncStatus: 'error', syncError: result.message || 'ไม่พบข้อมูลจากการดึงข้อมูล' });
+        }
         
         if (result.success) {
           setTimeout(() => {

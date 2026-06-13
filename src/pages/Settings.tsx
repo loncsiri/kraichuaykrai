@@ -160,23 +160,23 @@ export const Settings = () => {
           />
         </div>
 
-        <div className="flex flex-col gap-3 mb-4">
-          <div>
+        <div className="flex gap-2 mb-4">
+          <div className="flex-1">
             <label className="text-sm text-muted mb-1 block">เดือนที่เริ่ม</label>
             <input 
               type="month" 
               value={settings.periodStart}
               onChange={e => setSettings({...settings, periodStart: e.target.value})}
-              className="w-full"
+              style={{ marginBottom: 0 }}
             />
           </div>
-          <div>
+          <div className="flex-1">
             <label className="text-sm text-muted mb-1 block">เดือนที่สิ้นสุด</label>
             <input 
               type="month" 
               value={settings.periodEnd}
               onChange={e => setSettings({...settings, periodEnd: e.target.value})}
-              className="w-full"
+              style={{ marginBottom: 0 }}
             />
           </div>
         </div>
@@ -250,23 +250,44 @@ export const Settings = () => {
               />
             </div>
             
-            <button 
-              className="glass w-full text-primary" 
-              onClick={() => {
-                if (!store.googleSheetUrl || !store.googleSecretKey) {
-                  alert("กรุณากรอก URL และ Secret Key ก่อน");
-                  return;
-                }
-                store.syncAllToGoogleSheets();
-              }}
-              disabled={store.syncStatus === 'syncing'}
-            >
-              {store.syncStatus === 'syncing' ? 'กำลังซิงค์...' : 'ซิงค์ข้อมูลทั้งหมดตอนนี้ (ทับข้อมูลเดิม)'}
-            </button>
-            {store.syncStatus === 'success' && <div className="text-success text-center mt-2 text-sm">ซิงค์ข้อมูลสำเร็จ!</div>}
+            <div className="flex flex-col gap-2">
+              <button 
+                className="glass w-full text-primary" 
+                style={{ border: '1px solid var(--primary-color)' }}
+                onClick={() => {
+                  if (!store.googleSheetUrl || !store.googleSecretKey) {
+                    alert("กรุณากรอก URL และ Secret Key ก่อน");
+                    return;
+                  }
+                  if (window.confirm('คำเตือน: ข้อมูลในเครื่องจะถูกแทนที่ด้วยข้อมูลจาก Google Sheets ทันที คุณแน่ใจหรือไม่?')) {
+                    store.pullFromGoogleSheets();
+                  }
+                }}
+                disabled={store.syncStatus === 'syncing'}
+              >
+                {store.syncStatus === 'syncing' ? 'กำลังดึงข้อมูล...' : 'ดึงข้อมูลจาก Google Sheets ลงเครื่อง'}
+              </button>
+              
+              <button 
+                className="glass w-full text-primary" 
+                onClick={() => {
+                  if (!store.googleSheetUrl || !store.googleSecretKey) {
+                    alert("กรุณากรอก URL และ Secret Key ก่อน");
+                    return;
+                  }
+                  if (window.confirm('คำเตือน: ข้อมูลบน Google Sheets จะถูกแทนที่ด้วยข้อมูลในเครื่อง ทันที คุณแน่ใจหรือไม่?')) {
+                    store.syncAllToGoogleSheets();
+                  }
+                }}
+                disabled={store.syncStatus === 'syncing'}
+              >
+                {store.syncStatus === 'syncing' ? 'กำลังซิงค์...' : 'ส่งข้อมูลในเครื่องขึ้น Google Sheets (ทับข้อมูลเดิม)'}
+              </button>
+            </div>
+            {store.syncStatus === 'success' && <div className="text-success text-center mt-2 text-sm">การทำงานสำเร็จ!</div>}
             {store.syncStatus === 'error' && (
               <div className="text-danger text-center mt-2 text-sm">
-                การซิงค์ล้มเหลว: {store.syncError || 'โปรดตรวจสอบ URL และ Secret Key'}
+                ล้มเหลว: {store.syncError || 'โปรดตรวจสอบ URL และ Secret Key'}
               </div>
             )}
           </>

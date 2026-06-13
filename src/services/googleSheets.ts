@@ -1,6 +1,4 @@
-
-
-export type SyncAction = 'add' | 'update' | 'delete' | 'sync';
+export type SyncAction = 'add' | 'update' | 'delete' | 'sync' | 'pull';
 
 export interface SyncPayload {
   action: SyncAction;
@@ -11,6 +9,7 @@ export interface SyncPayload {
 export interface SyncResult {
   success: boolean;
   message?: string;
+  data?: any;
 }
 
 export const syncToGoogleSheets = async (
@@ -40,7 +39,10 @@ export const syncToGoogleSheets = async (
 
     const data = await response.json();
     if (data.code === 200) {
-      return { success: true };
+      return { 
+        success: true, 
+        data: typeof data.message === 'object' ? data.message : undefined 
+      };
     } else {
       return { success: false, message: `Apps Script Error: ${data.message} (Code: ${data.code})` };
     }

@@ -56,6 +56,8 @@ function doPost(e) {
       return handleDelete(sheet, data.payload);
     } else if (action === 'sync') {
       return handleSyncAll(sheet, data.payload);
+    } else if (action === 'pull') {
+      return handlePull(sheet);
     } else {
       return response(400, "Invalid action");
     }
@@ -141,6 +143,30 @@ function handleSyncAll(sheet, transactions) {
   }
   
   return response(200, "Synced successfully");
+}
+
+function handlePull(sheet) {
+  const data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return response(200, { transactions: [] });
+  
+  const transactions = [];
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    transactions.push({
+      id: row[0],
+      timestamp: row[1] instanceof Date ? row[1].toISOString() : row[1],
+      type: row[2],
+      title: row[3],
+      totalAmount: row[4] || 0,
+      govAmount: row[5] || 0,
+      userAmount: row[6] || 0,
+      govRatio: row[7] || 0,
+      userRatio: row[8] || 0,
+      category: row[9] || "",
+      note: row[10] || ""
+    });
+  }
+  return response(200, { transactions: transactions });
 }
 
 // Allow CORS preflight requests
