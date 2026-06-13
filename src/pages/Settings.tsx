@@ -211,6 +211,63 @@ export const Settings = () => {
       </div>
 
       <div className="glass p-4 mb-4">
+        <h3 className="font-semibold text-lg mb-4 text-primary">เชื่อมต่อ Google Sheets</h3>
+        <p className="text-xs text-muted mb-4">
+          บันทึกรายการอัตโนมัติไปยัง Google Sheets ของคุณ <br/>
+          (ต้องติดตั้ง Apps Script ก่อน <a href="https://github.com/loncsiri/kraichuaykrai/blob/main/docs/google-apps-script-template.js" target="_blank" rel="noreferrer" className="text-primary underline">ดูวิธีติดตั้งและคัดลอกโค้ด</a>)
+        </p>
+
+        <div className="flex items-center justify-between mb-4">
+          <label className="text-sm font-medium">เปิดใช้งานการซิงค์ข้อมูล</label>
+          <input 
+            type="checkbox" 
+            checked={store.googleSheetsEnabled}
+            onChange={(e) => store.setGoogleSheetsConfig(store.googleSheetUrl, store.googleSecretKey, e.target.checked)}
+            style={{ width: '20px', height: '20px' }}
+          />
+        </div>
+
+        {store.googleSheetsEnabled && (
+          <>
+            <div className="mb-4">
+              <label className="text-sm text-muted mb-1 block">Apps Script Web App URL</label>
+              <input 
+                type="text" 
+                value={store.googleSheetUrl}
+                onChange={(e) => store.setGoogleSheetsConfig(e.target.value, store.googleSecretKey, store.googleSheetsEnabled)}
+                placeholder="https://script.google.com/macros/s/.../exec"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="text-sm text-muted mb-1 block">Secret Key</label>
+              <input 
+                type="password" 
+                value={store.googleSecretKey}
+                onChange={(e) => store.setGoogleSheetsConfig(store.googleSheetUrl, e.target.value, store.googleSheetsEnabled)}
+                placeholder="รหัสลับที่คุณตั้งไว้ใน Apps Script"
+              />
+            </div>
+            
+            <button 
+              className="glass w-full text-primary" 
+              onClick={() => {
+                if (!store.googleSheetUrl || !store.googleSecretKey) {
+                  alert("กรุณากรอก URL และ Secret Key ก่อน");
+                  return;
+                }
+                store.syncAllToGoogleSheets();
+              }}
+              disabled={store.syncStatus === 'syncing'}
+            >
+              {store.syncStatus === 'syncing' ? 'กำลังซิงค์...' : 'ซิงค์ข้อมูลทั้งหมดตอนนี้ (ทับข้อมูลเดิม)'}
+            </button>
+            {store.syncStatus === 'success' && <div className="text-success text-center mt-2 text-sm">ซิงค์ข้อมูลสำเร็จ!</div>}
+            {store.syncStatus === 'error' && <div className="text-danger text-center mt-2 text-sm">การซิงค์ล้มเหลว ตรวจสอบ URL และ Secret Key</div>}
+          </>
+        )}
+      </div>
+
+      <div className="glass p-4 mb-4">
         <h3 className="font-semibold text-lg mb-4 text-primary">จัดการข้อมูล</h3>
         
         <div className="flex gap-2 mb-4">

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { syncToGoogleSheets } from '../services/googleSheets';
 
 export interface Transaction {
   id: string;
@@ -25,10 +26,21 @@ export interface Settings {
   categories: string[];
 }
 
+export type SyncStatus = 'idle' | 'syncing' | 'success' | 'error';
+
 export interface AppState {
   walletBalance: number;
   settings: Settings;
   transactions: Transaction[];
+  googleSheetUrl: string;
+  googleSecretKey: string;
+  googleSheetsEnabled: boolean;
+  syncStatus: SyncStatus;
+  
+  setGoogleSheetsConfig: (url: string, secret: string, enabled: boolean) => void;
+  setSyncStatus: (status: SyncStatus) => void;
+  syncAllToGoogleSheets: () => Promise<void>;
+
   addTransaction: (tx: Omit<Transaction, 'id'>) => void;
   updateTransaction: (id: string, updatedTx: Omit<Transaction, 'id'>) => void;
   deleteTransaction: (id: string) => void;
@@ -52,10 +64,40 @@ const defaultSettings: Settings = {
 
 export const useAppStore = create<AppState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       walletBalance: 0,
       settings: defaultSettings,
       transactions: [],
+      googleSheetUrl: '',
+      googleSecretKey: '',
+      googleSheetsEnabled: false,
+      syncStatus: 'idle',
+
+      setGoogleSheetsConfig: (url, secret, enabled) => {
+        set({ googleSheetUrl: url, googleSecretKey: secret, googleSheetsEnabled: enabled });
+      },
+
+      setSyncStatus: (status) => set({ syncStatus: status }),
+
+      syncAllToGoogleSheets: async () => {
+        const state = get();
+        if (!state.googleSheetsEnabled || !state.googleSheetUrl || !state.googleSecretKey) return;
+        
+        set({ syncStatus: 'syncing' });
+        const success = await syncToGoogleSheets(
+          state.googleSheetUrl, 
+          state.googleSecretKey, 
+          'sync', 
+          state.transactions
+        );
+        set({ syncStatus: success ? 'success' : 'error' });
+        
+        if (success) {
+          setTimeout(() => {
+            if (get().syncStatus === 'success') set({ syncStatus: 'idle' });
+          }, 3000);
+        }
+      },
 
       addTransaction: (txData) => {
         const id = `tx-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
@@ -74,6 +116,21 @@ export const useAppStore = create<AppState>()(
             walletBalance: newBalance,
           };
         });
+
+        // Trigger Google Sheets sync
+        const state = get();
+        if (state.googleSheetsEnabled) {
+          set({ syncStatus: 'syncing' });
+          syncToGoogleSheets(state.googleSheetUrl, state.googleSecretKey, 'add', newTx)
+            .then(success => {
+              set({ syncStatus: success ? 'success' : 'error' });
+              if (success) {
+                setTimeout(() => {
+                  if (get().syncStatus === 'success') set({ syncStatus: 'idle' });
+                }, 3000);
+              }
+            });
+        }
       },
 
       deleteTransaction: (id) => {
@@ -93,9 +150,26 @@ export const useAppStore = create<AppState>()(
             walletBalance: newBalance,
           };
         });
+
+        // Trigger Google Sheets sync
+        const state = get();
+        if (state.googleSheetsEnabled) {
+          set({ syncStatus: 'syncing' });
+          syncToGoogleSheets(state.googleSheetUrl, state.googleSecretKey, 'delete', { id })
+            .then(success => {
+              set({ syncStatus: success ? 'success' : 'error' });
+              if (success) {
+                setTimeout(() => {
+                  if (get().syncStatus === 'success') set({ syncStatus: 'idle' });
+                }, 3000);
+              }
+            });
+        }
       },
 
       updateTransaction: (id, updatedTxData) => {
+        const newTx: Transaction = { ...updatedTxData, id };
+        
         set((state) => {
           const oldTx = state.transactions.find((t) => t.id === id);
           if (!oldTx) return state;
@@ -115,13 +189,26 @@ export const useAppStore = create<AppState>()(
             newBalance += updatedTxData.userAmount;
           }
 
-          const newTx: Transaction = { ...updatedTxData, id };
-
           return {
             transactions: state.transactions.map((t) => t.id === id ? newTx : t),
             walletBalance: newBalance,
           };
         });
+
+        // Trigger Google Sheets sync
+        const state = get();
+        if (state.googleSheetsEnabled) {
+          set({ syncStatus: 'syncing' });
+          syncToGoogleSheets(state.googleSheetUrl, state.googleSecretKey, 'update', newTx)
+            .then(success => {
+              set({ syncStatus: success ? 'success' : 'error' });
+              if (success) {
+                setTimeout(() => {
+                  if (get().syncStatus === 'success') set({ syncStatus: 'idle' });
+                }, 3000);
+              }
+            });
+        }
       },
 
       updateSettings: (newSettings) => {
