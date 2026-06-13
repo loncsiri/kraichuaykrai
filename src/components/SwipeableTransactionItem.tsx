@@ -50,14 +50,14 @@ export const SwipeableTransactionItem: React.FC<Props> = ({ tx, formatMoney, onE
             {tx.type === 'expense' && (
               <div className="text-sm text-muted mt-1 flex flex-col gap-1 w-full pl-4">
                 <div className="flex justify-between items-baseline w-full">
-                  <span>รัฐ:</span>
+                  <span>รัฐ{tx.govRatio ? ` (${tx.govRatio}%)` : ''}:</span>
                   <div className="flex justify-end items-baseline text-primary font-semibold">
                     <span className="text-right tabular-nums" style={{ marginRight: '12px' }}>{formatMoney(tx.govAmount)}</span>
                     <span className="text-left" style={{ width: '32px' }}>บาท</span>
                   </div>
                 </div>
                 <div className="flex justify-between items-baseline w-full">
-                  <span>เรา:</span>
+                  <span>เรา{tx.userRatio ? ` (${tx.userRatio}%)` : ''}:</span>
                   <div className="flex justify-end items-baseline font-semibold">
                     <span className="text-right tabular-nums" style={{ marginRight: '12px' }}>{formatMoney(tx.userAmount)}</span>
                     <span className="text-left" style={{ width: '32px' }}>บาท</span>

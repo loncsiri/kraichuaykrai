@@ -160,21 +160,23 @@ export const Settings = () => {
           />
         </div>
 
-        <div className="flex gap-2 mb-4">
-          <div className="flex-1">
+        <div className="flex flex-col gap-3 mb-4">
+          <div>
             <label className="text-sm text-muted mb-1 block">เดือนที่เริ่ม</label>
             <input 
               type="month" 
               value={settings.periodStart}
               onChange={e => setSettings({...settings, periodStart: e.target.value})}
+              className="w-full"
             />
           </div>
-          <div className="flex-1">
+          <div>
             <label className="text-sm text-muted mb-1 block">เดือนที่สิ้นสุด</label>
             <input 
               type="month" 
               value={settings.periodEnd}
               onChange={e => setSettings({...settings, periodEnd: e.target.value})}
+              className="w-full"
             />
           </div>
         </div>

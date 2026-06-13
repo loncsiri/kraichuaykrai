@@ -20,7 +20,7 @@ function setupSheet() {
   if (!sheet) {
     sheet = ss.insertSheet(SHEET_NAME);
     // Create headers
-    const headers = ["ID", "Timestamp", "Type", "Title", "TotalAmount", "GovAmount", "UserAmount", "Category", "Note"];
+    const headers = ["ID", "Timestamp", "Type", "Title", "TotalAmount", "GovAmount", "UserAmount", "GovRatio", "UserRatio", "Category", "Note"];
     sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
     sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold").setBackground("#f3f4f6");
     sheet.setFrozenRows(1);
@@ -74,6 +74,8 @@ function handleAdd(sheet, tx) {
     tx.totalAmount,
     tx.govAmount,
     tx.userAmount,
+    tx.govRatio || "",
+    tx.userRatio || "",
     tx.category || "",
     tx.note || ""
   ]);
@@ -85,7 +87,7 @@ function handleUpdate(sheet, tx) {
   for (let i = 1; i < data.length; i++) {
     if (data[i][0] === tx.id) {
       const row = i + 1;
-      sheet.getRange(row, 1, 1, 9).setValues([[
+      sheet.getRange(row, 1, 1, 11).setValues([[
         tx.id,
         tx.timestamp,
         tx.type,
@@ -93,6 +95,8 @@ function handleUpdate(sheet, tx) {
         tx.totalAmount,
         tx.govAmount,
         tx.userAmount,
+        tx.govRatio || "",
+        tx.userRatio || "",
         tx.category || "",
         tx.note || ""
       ]]);
@@ -116,7 +120,7 @@ function handleDelete(sheet, payload) {
 function handleSyncAll(sheet, transactions) {
   // Clear existing data (except header)
   if (sheet.getLastRow() > 1) {
-    sheet.getRange(2, 1, sheet.getLastRow() - 1, 9).clearContent();
+    sheet.getRange(2, 1, sheet.getLastRow() - 1, 11).clearContent();
   }
   
   if (transactions && transactions.length > 0) {
@@ -128,10 +132,12 @@ function handleSyncAll(sheet, transactions) {
       tx.totalAmount,
       tx.govAmount,
       tx.userAmount,
+      tx.govRatio || "",
+      tx.userRatio || "",
       tx.category || "",
       tx.note || ""
     ]);
-    sheet.getRange(2, 1, rows.length, 9).setValues(rows);
+    sheet.getRange(2, 1, rows.length, 11).setValues(rows);
   }
   
   return response(200, "Synced successfully");

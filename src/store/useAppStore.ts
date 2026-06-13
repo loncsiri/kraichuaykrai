@@ -12,6 +12,8 @@ export interface Transaction {
   userAmount: number;
   category: string;
   note: string;
+  govRatio?: number;
+  userRatio?: number;
 }
 
 export interface Settings {
@@ -103,9 +105,15 @@ export const useAppStore = create<AppState>()(
 
       addTransaction: (txData) => {
         const id = `tx-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-        const newTx: Transaction = { ...txData, id };
 
         set((state) => {
+          const newTx: Transaction = { 
+            ...txData, 
+            id,
+            govRatio: txData.type === 'expense' ? state.settings.supportRatioGov : undefined,
+            userRatio: txData.type === 'expense' ? state.settings.supportRatioUser : undefined
+          };
+
           let newBalance = state.walletBalance;
           if (newTx.type === 'topup') {
             newBalance += newTx.userAmount;
@@ -121,9 +129,10 @@ export const useAppStore = create<AppState>()(
 
         // Trigger Google Sheets sync
         const state = get();
-        if (state.googleSheetsEnabled) {
+        const addedTx = state.transactions.find(t => t.id === id);
+        if (addedTx && state.googleSheetsEnabled) {
           set({ syncStatus: 'syncing', syncError: null });
-          syncToGoogleSheets(state.googleSheetUrl, state.googleSecretKey, 'add', newTx)
+          syncToGoogleSheets(state.googleSheetUrl, state.googleSecretKey, 'add', addedTx)
             .then(result => {
               set({ syncStatus: result.success ? 'success' : 'error', syncError: result.success ? null : result.message });
               if (result.success) {

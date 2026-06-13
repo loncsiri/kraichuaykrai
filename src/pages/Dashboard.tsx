@@ -25,7 +25,9 @@ export const Dashboard: React.FC = () => {
   const monthlyLimit = store.settings.monthlySupportAmount;
   const monthlyPercent = monthlyLimit > 0 ? (govSpentMonthly / monthlyLimit) * 100 : 0;
 
-  const recentTransactions = store.transactions.slice(0, 3);
+  const recentTransactions = [...store.transactions]
+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+    .slice(0, 3);
 
   const formatMoney = (amount: number) => {
     return amount.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -156,14 +158,14 @@ export const Dashboard: React.FC = () => {
                   {tx.type === 'expense' && (
                     <div className="text-sm text-muted mt-1 flex flex-col gap-1 w-full pl-4" style={{ fontSize: '12px' }}>
                       <div className="flex justify-between items-baseline w-full">
-                        <span>รัฐ:</span>
+                        <span>รัฐ{tx.govRatio ? ` (${tx.govRatio}%)` : ''}:</span>
                         <div className="flex justify-end items-baseline">
                           <span className="text-right tabular-nums" style={{ marginRight: '12px' }}>{formatMoney(tx.govAmount)}</span>
                           <span className="text-left" style={{ width: '32px' }}>บาท</span>
                         </div>
                       </div>
                       <div className="flex justify-between items-baseline w-full">
-                        <span>เรา:</span>
+                        <span>เรา{tx.userRatio ? ` (${tx.userRatio}%)` : ''}:</span>
                         <div className="flex justify-end items-baseline">
                           <span className="text-right tabular-nums" style={{ marginRight: '12px' }}>{formatMoney(tx.userAmount)}</span>
                           <span className="text-left" style={{ width: '32px' }}>บาท</span>
