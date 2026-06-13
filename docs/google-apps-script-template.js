@@ -68,9 +68,10 @@ function doPost(e) {
 }
 
 function handleAdd(sheet, tx) {
+  const dateObj = tx.timestamp ? new Date(tx.timestamp) : new Date();
   sheet.appendRow([
     tx.id,
-    tx.timestamp,
+    dateObj,
     tx.type,
     tx.title,
     tx.totalAmount,
@@ -89,9 +90,10 @@ function handleUpdate(sheet, tx) {
   for (let i = 1; i < data.length; i++) {
     if (data[i][0] === tx.id) {
       const row = i + 1;
+      const dateObj = tx.timestamp ? new Date(tx.timestamp) : new Date();
       sheet.getRange(row, 1, 1, 11).setValues([[
         tx.id,
-        tx.timestamp,
+        dateObj,
         tx.type,
         tx.title,
         tx.totalAmount,
@@ -128,7 +130,7 @@ function handleSyncAll(sheet, transactions) {
   if (transactions && transactions.length > 0) {
     const rows = transactions.map(tx => [
       tx.id,
-      tx.timestamp,
+      tx.timestamp ? new Date(tx.timestamp) : new Date(),
       tx.type,
       tx.title,
       tx.totalAmount,
