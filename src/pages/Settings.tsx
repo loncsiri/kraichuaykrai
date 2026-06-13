@@ -262,7 +262,11 @@ export const Settings = () => {
               {store.syncStatus === 'syncing' ? 'กำลังซิงค์...' : 'ซิงค์ข้อมูลทั้งหมดตอนนี้ (ทับข้อมูลเดิม)'}
             </button>
             {store.syncStatus === 'success' && <div className="text-success text-center mt-2 text-sm">ซิงค์ข้อมูลสำเร็จ!</div>}
-            {store.syncStatus === 'error' && <div className="text-danger text-center mt-2 text-sm">การซิงค์ล้มเหลว ตรวจสอบ URL และ Secret Key</div>}
+            {store.syncStatus === 'error' && (
+              <div className="text-danger text-center mt-2 text-sm">
+                การซิงค์ล้มเหลว: {store.syncError || 'โปรดตรวจสอบ URL และ Secret Key'}
+              </div>
+            )}
           </>
         )}
       </div>

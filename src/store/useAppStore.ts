@@ -36,9 +36,10 @@ export interface AppState {
   googleSecretKey: string;
   googleSheetsEnabled: boolean;
   syncStatus: SyncStatus;
+  syncError: string | null;
   
   setGoogleSheetsConfig: (url: string, secret: string, enabled: boolean) => void;
-  setSyncStatus: (status: SyncStatus) => void;
+  setSyncStatus: (status: SyncStatus, error?: string | null) => void;
   syncAllToGoogleSheets: () => Promise<void>;
 
   addTransaction: (tx: Omit<Transaction, 'id'>) => void;
@@ -72,27 +73,28 @@ export const useAppStore = create<AppState>()(
       googleSecretKey: '',
       googleSheetsEnabled: false,
       syncStatus: 'idle',
+      syncError: null,
 
       setGoogleSheetsConfig: (url, secret, enabled) => {
         set({ googleSheetUrl: url, googleSecretKey: secret, googleSheetsEnabled: enabled });
       },
 
-      setSyncStatus: (status) => set({ syncStatus: status }),
+      setSyncStatus: (status, error = null) => set({ syncStatus: status, syncError: error }),
 
       syncAllToGoogleSheets: async () => {
         const state = get();
         if (!state.googleSheetsEnabled || !state.googleSheetUrl || !state.googleSecretKey) return;
         
-        set({ syncStatus: 'syncing' });
-        const success = await syncToGoogleSheets(
+        set({ syncStatus: 'syncing', syncError: null });
+        const result = await syncToGoogleSheets(
           state.googleSheetUrl, 
           state.googleSecretKey, 
           'sync', 
           state.transactions
         );
-        set({ syncStatus: success ? 'success' : 'error' });
+        set({ syncStatus: result.success ? 'success' : 'error', syncError: result.success ? null : result.message });
         
-        if (success) {
+        if (result.success) {
           setTimeout(() => {
             if (get().syncStatus === 'success') set({ syncStatus: 'idle' });
           }, 3000);
@@ -120,11 +122,11 @@ export const useAppStore = create<AppState>()(
         // Trigger Google Sheets sync
         const state = get();
         if (state.googleSheetsEnabled) {
-          set({ syncStatus: 'syncing' });
+          set({ syncStatus: 'syncing', syncError: null });
           syncToGoogleSheets(state.googleSheetUrl, state.googleSecretKey, 'add', newTx)
-            .then(success => {
-              set({ syncStatus: success ? 'success' : 'error' });
-              if (success) {
+            .then(result => {
+              set({ syncStatus: result.success ? 'success' : 'error', syncError: result.success ? null : result.message });
+              if (result.success) {
                 setTimeout(() => {
                   if (get().syncStatus === 'success') set({ syncStatus: 'idle' });
                 }, 3000);
@@ -154,11 +156,11 @@ export const useAppStore = create<AppState>()(
         // Trigger Google Sheets sync
         const state = get();
         if (state.googleSheetsEnabled) {
-          set({ syncStatus: 'syncing' });
+          set({ syncStatus: 'syncing', syncError: null });
           syncToGoogleSheets(state.googleSheetUrl, state.googleSecretKey, 'delete', { id })
-            .then(success => {
-              set({ syncStatus: success ? 'success' : 'error' });
-              if (success) {
+            .then(result => {
+              set({ syncStatus: result.success ? 'success' : 'error', syncError: result.success ? null : result.message });
+              if (result.success) {
                 setTimeout(() => {
                   if (get().syncStatus === 'success') set({ syncStatus: 'idle' });
                 }, 3000);
@@ -198,11 +200,11 @@ export const useAppStore = create<AppState>()(
         // Trigger Google Sheets sync
         const state = get();
         if (state.googleSheetsEnabled) {
-          set({ syncStatus: 'syncing' });
+          set({ syncStatus: 'syncing', syncError: null });
           syncToGoogleSheets(state.googleSheetUrl, state.googleSecretKey, 'update', newTx)
-            .then(success => {
-              set({ syncStatus: success ? 'success' : 'error' });
-              if (success) {
+            .then(result => {
+              set({ syncStatus: result.success ? 'success' : 'error', syncError: result.success ? null : result.message });
+              if (result.success) {
                 setTimeout(() => {
                   if (get().syncStatus === 'success') set({ syncStatus: 'idle' });
                 }, 3000);

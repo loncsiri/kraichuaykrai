@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CORS Test</title>
+</head>
+<body>
+  <h1>Test</h1>
+  <script>
+    const url = "https://script.google.com/macros/s/AKfycbwfMOeMoxOJVs370vXS6g8OcvFlJVd64fkMyQNf5BcdhVCF2gEZ95p3ivSCG-xCNkmmNg/exec";
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8',
+      },
+      body: JSON.stringify({
+        action: 'sync',
+        secretKey: 'test',
+        payload: []
+      }),
+    })
+    .then(r => r.json())
+    .then(data => console.log('Success:', data))
+    .catch(e => console.error('Fetch error:', e));
+  </script>
+</body>
+</html>

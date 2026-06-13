@@ -8,13 +8,18 @@ export interface SyncPayload {
   payload: any;
 }
 
+export interface SyncResult {
+  success: boolean;
+  message?: string;
+}
+
 export const syncToGoogleSheets = async (
   url: string,
   secretKey: string,
   action: SyncAction,
   payload: any
-): Promise<boolean> => {
-  if (!url || !secretKey) return false;
+): Promise<SyncResult> => {
+  if (!url || !secretKey) return { success: false, message: 'URL หรือ Secret Key ว่างเปล่า' };
 
   try {
     const response = await fetch(url, {
@@ -30,15 +35,17 @@ export const syncToGoogleSheets = async (
     });
 
     if (!response.ok) {
-      // In some environments, Google Apps Script might return a redirect (302) or error
-      // fetch API usually follows redirects transparently.
-      throw new Error(`HTTP error! status: ${response.status}`);
+      return { success: false, message: `HTTP error! status: ${response.status}` };
     }
 
     const data = await response.json();
-    return data.code === 200;
-  } catch (error) {
+    if (data.code === 200) {
+      return { success: true };
+    } else {
+      return { success: false, message: `Apps Script Error: ${data.message} (Code: ${data.code})` };
+    }
+  } catch (error: any) {
     console.error('Google Sheets sync failed:', error);
-    return false;
+    return { success: false, message: `Network/CORS Error: ${error.message || 'Unknown error'}` };
   }
 };
