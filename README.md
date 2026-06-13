@@ -15,9 +15,12 @@
 ### ✨ ฟีเจอร์หลัก (Features)
 - **📊 แดชบอร์ดสรุปยอด:** ติดตามโควตาเงินรัฐบาลรายวันและรายเดือนได้แบบ Real-time พร้อมแถบ Progress bar แจ้งเตือนสัดส่วนเงิน
 - **🧾 สแกนสลิปโอนเงินอัตโนมัติ (Auto Slip Scanner):** เพียงอัปโหลดรูปสลิป แอปจะดึงยอดเงิน วันที่ และเวลา ออกมาให้อัตโนมัติ (ใช้ Tesseract.js)
-- **🔒 ความเป็นส่วนตัวขั้นสูงสุด (100% Local-First):** ข้อมูลประวัติการใช้งาน ยอดเงิน และรูปสลิป จะถูกประมวลผลและเก็บอยู่ใน Browser ของคุณเท่านั้น (Local Storage)
-- **📱 รองรับ PWA (Progressive Web App):** สามารถกด Add to Home Screen บนมือถือ iOS หรือ Android เพื่อใช้งานเหมือนเป็นแอปพลิเคชันในเครื่องได้ทันที
-- **🎨 ดีไซน์สวยงามใช้งานง่าย:** รองรับทั้ง Light/Dark mode อัตโนมัติตามระบบปฏิบัติการ พร้อม UI แบบ Glassmorphism 
+- **☁️ เชื่อมต่อ Google Sheets (Cloud Sync):** แบ็คอัปและซิงค์ข้อมูลกับ Google Sheets ส่วนตัวอัตโนมัติ (ผ่าน Apps Script)
+- **📂 นำเข้า/ส่งออกข้อมูล (CSV):** สามารถ Export ประวัติเป็นไฟล์ CSV หรือ Import ข้อมูลจากภายนอกกลับเข้ามาในระบบได้
+- **⚙️ ปรับแต่งได้อิสระ:** ตั้งค่าสัดส่วนรัฐ:เรา, ยอดจำกัดต่อวัน/เดือน, เพิ่ม/ลบหมวดหมู่ค่าใช้จ่าย และระยะเวลาโครงการได้ด้วยตัวเอง
+- **🔒 ความเป็นส่วนตัวขั้นสูงสุด (100% Local-First):** ข้อมูลประวัติการใช้งานและรูปสลิป จะถูกประมวลผลและเก็บอยู่ใน Browser ของคุณ (เว้นแต่คุณจะเปิดใช้งาน Google Sheets Sync)
+- **📱 รองรับ PWA (Progressive Web App):** สามารถกด Add to Home Screen บนมือถือ iOS/Android ใช้งานเหมือนแอปพลิเคชันได้ทันที
+- **🎨 ดีไซน์สวยงามใช้งานง่าย:** รองรับทั้ง Light/Dark mode อัตโนมัติตามระบบปฏิบัติการ พร้อม UI แบบ Glassmorphism  
 
 ### 🛠 ข้อมูลทางเทคนิค (Technical Stack)
 - **Frontend Framework:** React 18 + TypeScript + Vite
@@ -49,7 +52,10 @@
 ### ✨ Features
 - **📊 Dashboard Overview:** Track daily and monthly subsidies, purchase limits, and actual wallet balances with intuitive progress bars.
 - **🧾 Auto Slip Scanner:** Upload a payment slip and instantly extract the total amount, date, and time via OCR (Powered by Tesseract.js).
-- **🔒 Absolute Privacy (Local-First):** All your financial data, transaction histories, and images are processed and stored exclusively on your device's Local Storage.
+- **☁️ Google Sheets Sync:** Connect your private Google Sheet to automatically back up and sync your transactions.
+- **📂 CSV Import/Export:** Easily download your transaction history or restore data from a CSV file.
+- **⚙️ Flexible Configuration:** Customize expense categories, co-pay ratios, daily/monthly limits, and project durations to fit any scheme.
+- **🔒 Absolute Privacy (Local-First):** All your financial data and images are processed and stored exclusively on your device (unless Google Sheets sync is enabled).
 - **📱 PWA Support:** Install it directly to your iOS/Android home screen for a native app-like experience.
 - **🎨 Premium UI/UX:** Responsive glassmorphism design that fully supports system-level Light/Dark modes.
 
