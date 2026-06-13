@@ -86,6 +86,14 @@ input, select, textarea {
   appearance: none;
 }
 
+input[type="checkbox"], input[type="radio"] {
+  -webkit-appearance: auto;
+  appearance: auto;
+  width: auto;
+  padding: 0;
+  margin-bottom: 0;
+}
+
 input:focus, select:focus, textarea:focus {
   border-color: var(--primary-color);
 }
