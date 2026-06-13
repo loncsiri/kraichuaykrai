@@ -305,6 +305,14 @@ export const Settings = () => {
       <div className="glass p-4 mb-4">
         <h3 className="font-semibold text-lg mb-4 text-primary">จัดการข้อมูล</h3>
         
+        <p className="text-xs text-muted mb-4 leading-relaxed">
+          นำเข้า/ส่งออกข้อมูลรายการทั้งหมดในรูปแบบไฟล์ CSV<br/>
+          <a href="/sample-import.csv" download className="text-primary underline font-medium">📥 โหลดไฟล์ตัวอย่าง (CSV Template)</a><br/>
+          <span className="opacity-80 mt-1 block">
+            * คอลัมน์ที่ระบบรองรับ: id, timestamp, type, title, totalAmount, govAmount, userAmount, category, note
+          </span>
+        </p>
+
         <div className="flex gap-2 mb-4">
           <button className="btn-primary flex-1" style={{ background: 'var(--secondary-color)' }} onClick={exportCSV}>
             <FiUpload /> Export CSV
