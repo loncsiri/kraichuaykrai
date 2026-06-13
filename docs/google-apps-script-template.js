@@ -44,6 +44,9 @@ function doPost(e) {
     if (data.secretKey !== SECRET_KEY) {
       return response(401, "Unauthorized");
     }
+    if (SECRET_KEY === "kraichuaykrai-secret-1234") {
+      return response(403, "Please change the default SECRET_KEY in Apps Script for your security.");
+    }
 
     const sheet = setupSheet();
     const action = data.action;

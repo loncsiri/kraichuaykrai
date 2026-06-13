@@ -259,6 +259,10 @@ export const Settings = () => {
                     alert("กรุณากรอก URL และ Secret Key ก่อน");
                     return;
                   }
+                  if (store.googleSecretKey === "kraichuaykrai-secret-1234") {
+                    alert("⚠️ ไม่อนุญาตให้ใช้ Secret Key เริ่มต้น\n\nเพื่อความปลอดภัย กรุณาไปเปลี่ยนค่า SECRET_KEY ในโค้ด Apps Script ให้เป็นรหัสของคุณเอง แล้วนำรหัสนั้นมากรอกที่นี่ก่อนใช้งานครับ");
+                    return;
+                  }
                   if (window.confirm('คำเตือน: ข้อมูลในเครื่องจะถูกแทนที่ด้วยข้อมูลจาก Google Sheets ทันที คุณแน่ใจหรือไม่?')) {
                     store.pullFromGoogleSheets();
                   }
@@ -273,6 +277,10 @@ export const Settings = () => {
                 onClick={() => {
                   if (!store.googleSheetUrl || !store.googleSecretKey) {
                     alert("กรุณากรอก URL และ Secret Key ก่อน");
+                    return;
+                  }
+                  if (store.googleSecretKey === "kraichuaykrai-secret-1234") {
+                    alert("⚠️ ไม่อนุญาตให้ใช้ Secret Key เริ่มต้น\n\nเพื่อความปลอดภัย กรุณาไปเปลี่ยนค่า SECRET_KEY ในโค้ด Apps Script ให้เป็นรหัสของคุณเอง แล้วนำรหัสนั้นมากรอกที่นี่ก่อนใช้งานครับ");
                     return;
                   }
                   if (window.confirm('คำเตือน: ข้อมูลบน Google Sheets จะถูกแทนที่ด้วยข้อมูลในเครื่อง ทันที คุณแน่ใจหรือไม่?')) {
