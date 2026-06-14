@@ -153,8 +153,8 @@ export const useAppStore = create<AppState>()(
           const newTx: Transaction = { 
             ...txData, 
             id,
-            govRatio: txData.type === 'expense' ? state.settings.supportRatioGov : undefined,
-            userRatio: txData.type === 'expense' ? state.settings.supportRatioUser : undefined
+            govRatio: txData.govRatio !== undefined ? txData.govRatio : (txData.type === 'expense' ? state.settings.supportRatioGov : undefined),
+            userRatio: txData.userRatio !== undefined ? txData.userRatio : (txData.type === 'expense' ? state.settings.supportRatioUser : undefined)
           };
 
           let newBalance = state.walletBalance;

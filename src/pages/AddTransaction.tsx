@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAppStore } from '../store/useAppStore';
-import { calculateRemainingGov, calculateTransactionSplit } from '../utils/calculations';
+import { calculateRemainingGov, calculateTransactionSplit, isDateWithinPeriod } from '../utils/calculations';
 import { FiArrowLeft, FiAlertCircle, FiClock, FiUpload, FiLoader } from 'react-icons/fi';
 import { format, parseISO } from 'date-fns';
 import { useRef, useEffect } from 'react';
@@ -54,12 +54,19 @@ export const AddTransaction = () => {
     return Array.from(new Set(store.transactions.map(t => t.title).filter(Boolean)));
   }, [store.transactions]);
 
-  const { availableGovToday } = useMemo(() => calculateRemainingGov(store), [store]);
+  const { availableGovToday } = useMemo(() => {
+    return calculateRemainingGov(store, date, editId || undefined);
+  }, [store, date, editId]);
+
+  const isWithinPeriod = useMemo(() => {
+    return isDateWithinPeriod(date, store.settings.periodStart, store.settings.periodEnd);
+  }, [date, store.settings.periodStart, store.settings.periodEnd]);
 
   const { govAmount, userAmount } = useMemo(() => {
     if (type === 'topup' || numAmount <= 0) return { govAmount: 0, userAmount: numAmount };
+    if (!isWithinPeriod) return { govAmount: 0, userAmount: numAmount };
     return calculateTransactionSplit(numAmount, availableGovToday, store);
-  }, [numAmount, type, availableGovToday, store]);
+  }, [numAmount, type, availableGovToday, store, isWithinPeriod]);
 
   const isWalletSufficient = useMemo(() => {
     if (type === 'topup') return true;
@@ -89,7 +96,9 @@ export const AddTransaction = () => {
       govAmount: type === 'expense' ? govAmount : 0,
       userAmount: type === 'expense' ? userAmount : numAmount,
       category: type === 'expense' ? category : '',
-      note: note.trim()
+      note: note.trim(),
+      govRatio: type === 'expense' && isWithinPeriod ? store.settings.supportRatioGov : 0,
+      userRatio: type === 'expense' && isWithinPeriod ? store.settings.supportRatioUser : 100
     };
 
     if (editId) {
@@ -221,7 +230,13 @@ export const AddTransaction = () => {
                 <span>ยอดเงินในกระเป๋าไม่พอ (มี {store.walletBalance.toLocaleString('th-TH', {minimumFractionDigits: 2})} บาท)</span>
               </div>
             )}
-            {govAmount < numAmount * (store.settings.supportRatioGov / 100) && (
+            {!isWithinPeriod && (
+              <div className="flex items-center gap-2 mt-2 text-warning text-sm" style={{ color: 'var(--warning-color)' }}>
+                <FiAlertCircle />
+                <span>วันที่เลือกอยู่นอกช่วงเวลาโครงการที่ตั้งไว้ในหน้าตั้งค่า รัฐจะไม่ช่วยสนับสนุนในรายการนี้</span>
+              </div>
+            )}
+            {isWithinPeriod && govAmount < numAmount * (store.settings.supportRatioGov / 100) && govAmount > 0 && (
               <div className="flex items-center gap-2 mt-2 text-warning text-sm" style={{ color: 'var(--warning-color)' }}>
                 <FiAlertCircle />
                 <span>สิทธิ์รัฐบาลคงเหลือไม่พอหักตามสัดส่วนปกติ (ส่วนต่างถูกหักจากกระเป๋าเรา)</span>
