@@ -76,7 +76,8 @@ export const AddTransaction = () => {
       if (oldTx && oldTx.type === 'expense') balance += oldTx.userAmount;
       if (oldTx && oldTx.type === 'topup') balance -= oldTx.userAmount;
     }
-    return balance >= userAmount;
+    // Handle floating point precision issues (e.g. 239.99999999999997 vs 240)
+    return Math.round(balance * 100) >= Math.round(userAmount * 100);
   }, [type, store.walletBalance, editId, store.transactions, userAmount]);
 
   const isFormValid = numAmount > 0 && date && time;
