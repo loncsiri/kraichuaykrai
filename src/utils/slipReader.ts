@@ -95,11 +95,31 @@ export const scanSlip = async (
   let gWalletIndex = lines.findIndex(l => l.toLowerCase().includes('g-wallet'));
   if (gWalletIndex !== -1) {
     for(let j = gWalletIndex + 1; j < Math.min(gWalletIndex + 5, lines.length); j++) {
-      const l = lines[j].replace(/^[vV\|↓\s]+$/, '').trim();
-      if (l.length > 3) {
-        title = l;
+      let l = lines[j].trim();
+      
+      // Remove standalone non-alphanumeric junk often read from logos/arrows
+      let cleanLine = l.replace(/^[\|↓_!\-\s]+/, '');
+      
+      // Remove 'w', 'W', 'v', 'V' if they are standalone before a space OR followed by a Thai character
+      cleanLine = cleanLine.replace(/^[wWvV]\s+/, '');
+      cleanLine = cleanLine.replace(/^[wWvV](?=[\u0E00-\u0E7F])/, '');
+      cleanLine = cleanLine.trim();
+
+      if (cleanLine.length > 3) {
+        title = cleanLine;
         break;
       }
+    }
+  }
+
+  // Validation and Auto-correction for OCR errors (like 0 read as 6)
+  if (totalAmount > 0 && govAmount > 0 && userAmount > 0) {
+    // If the sum of gov and user amount doesn't match total, trust the sum 
+    // because individual smaller numbers are less prone to single-character errors (e.g. 60 -> 66)
+    const expectedTotal = govAmount + userAmount;
+    if (Math.abs(totalAmount - expectedTotal) > 0.01) {
+      console.log(`OCR Correction: totalAmount changed from ${totalAmount} to ${expectedTotal}`);
+      totalAmount = expectedTotal;
     }
   }
 
