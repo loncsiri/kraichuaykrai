@@ -95,15 +95,20 @@ export const scanSlip = async (
   let gWalletIndex = lines.findIndex(l => l.toLowerCase().includes('g-wallet'));
   if (gWalletIndex !== -1) {
     for(let j = gWalletIndex + 1; j < Math.min(gWalletIndex + 5, lines.length); j++) {
-      let l = lines[j].trim();
+      let cleanLine = lines[j].trim();
       
-      // Remove standalone non-alphanumeric junk often read from logos/arrows
-      let cleanLine = l.replace(/^[\|↓_!\-\s]+/, '');
-      
-      // Remove 'w', 'W', 'v', 'V' if they are standalone before a space OR followed by a Thai character
-      cleanLine = cleanLine.replace(/^[wWvV]\s+/, '');
-      cleanLine = cleanLine.replace(/^[wWvV](?=[\u0E00-\u0E7F])/, '');
-      cleanLine = cleanLine.trim();
+      let lastLength = 0;
+      while (cleanLine.length !== lastLength) {
+        lastLength = cleanLine.length;
+        // Remove standalone non-alphanumeric junk
+        cleanLine = cleanLine.replace(/^[\|↓_!\-\s]+/, '');
+        // Remove w/W/v/V followed by space (e.g. "Ww XTENCAFE")
+        cleanLine = cleanLine.replace(/^[wWvV]+\s+/, '');
+        // Remove w/W/v/V followed by Thai character (e.g. "wร้าน")
+        cleanLine = cleanLine.replace(/^[wWvV]+(?=[\u0E00-\u0E7F])/, '');
+        // Remove w/W/v/V followed by junk (e.g. "w|")
+        cleanLine = cleanLine.replace(/^[wWvV]+(?=[\|↓_!\-])/, '');
+      }
 
       if (cleanLine.length > 3) {
         title = cleanLine;
