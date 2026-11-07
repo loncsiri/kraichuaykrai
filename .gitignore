@@ -1,5 +1,21 @@
+# Environment variables (บล็อก .env* ทั้งหมด ยกเว้น .env.example)
+.env*
+!.env.example
+
+# Dependencies
+node_modules/
+
+# Vercel configuration & cache
+.vercel/
+
+# Build outputs
+dist/
+dist-ssr/
+.next/
+out/
+
 # Logs
-logs
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -7,10 +23,9 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
+# Local & TypeScript cache
 *.local
+*.tsbuildinfo
 
 # Editor directories and files
 .vscode/*
@@ -22,5 +37,3 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-
-.vercel
