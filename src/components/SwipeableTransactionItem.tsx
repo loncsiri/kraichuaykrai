@@ -1,123 +1,181 @@
-import React, { useState } from 'react';
-import { FiShoppingBag, FiPlus, FiTrash2, FiEdit } from 'react-icons/fi';
+import React, { useEffect, useState } from 'react';
+import { FiEdit2, FiImage, FiPlus, FiShoppingBag, FiTrash2, FiX } from 'react-icons/fi';
 import { format, parseISO } from 'date-fns';
-import type { Transaction } from '../store/useAppStore';
+import type { Transaction } from '../store/types';
+import { formatMoney } from '../utils/money';
+import { getSlipImage } from '../utils/slipStorage';
+import { ConfirmModal } from './ui/ConfirmModal';
 
 interface Props {
   tx: Transaction;
-  formatMoney: (amount: number) => string;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
 }
 
-export const SwipeableTransactionItem: React.FC<Props> = ({ tx, formatMoney, onEdit, onDelete }) => {
+export const SwipeableTransactionItem: React.FC<Props> = ({ tx, onEdit, onDelete }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [slipUrl, setSlipUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (slipUrl) URL.revokeObjectURL(slipUrl);
+    };
+  }, [slipUrl]);
+
+  const handleOpenSlip = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const blob = await getSlipImage(tx.id);
+    if (blob) {
+      setSlipUrl(URL.createObjectURL(blob));
+    }
+  };
 
   return (
-    <div 
-      className="glass flex-col"
-      style={{ cursor: 'pointer', overflow: 'hidden', padding: 0 }}
-      onClick={() => setIsOpen(!isOpen)}
-    >
-      <div className="p-4 flex-col gap-2">
-        <div className="flex justify-between items-start">
-          <div className="flex items-start gap-3 mt-1">
-            <div className="btn-icon" style={{ 
-              background: tx.type === 'topup' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)', 
-              color: tx.type === 'topup' ? 'var(--secondary-color)' : 'var(--danger-color)',
-              flexShrink: 0,
-              width: '40px',
-              height: '40px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: '50%'
-            }}>
-              {tx.type === 'topup' ? <FiPlus /> : <FiShoppingBag />}
-            </div>
-            <div>
-              <div className="font-semibold">{tx.title}</div>
-              <div className="text-sm text-muted mt-1">
-                {format(parseISO(tx.timestamp), 'HH:mm')} น.
+    <>
+      <div className="card overflow-hidden transition">
+        <button
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+          className="w-full text-left p-4 cursor-pointer hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition"
+          aria-expanded={isOpen}
+        >
+          <div className="flex justify-between items-start gap-3">
+            <div className="flex items-start gap-3 min-w-0">
+              <div
+                className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
+                  tx.type === 'topup'
+                    ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+                    : 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
+                }`}
+              >
+                {tx.type === 'topup' ? <FiPlus size={18} /> : <FiShoppingBag size={18} />}
               </div>
-            </div>
-          </div>
-          <div className="flex flex-col items-end flex-shrink-0" style={{ minWidth: '160px' }}>
-            <div className={`flex justify-end items-baseline font-bold text-xl ${tx.type === 'topup' ? 'text-success' : ''}`}>
-              <span className="text-right tabular-nums" style={{ marginRight: '12px' }}>{tx.type === 'topup' ? '+' : '-'}{formatMoney(tx.type === 'topup' ? tx.userAmount : tx.totalAmount)}</span>
-              <span className="text-left text-base" style={{ width: '32px' }}>บาท</span>
-            </div>
-            {tx.type === 'expense' && (
-              <div className="text-sm text-muted mt-1 flex flex-col gap-1 w-full pl-4">
-                <div className="flex justify-between items-baseline w-full">
-                  <span>รัฐ{tx.govRatio ? ` (${tx.govRatio}%)` : ''}:</span>
-                  <div className="flex justify-end items-baseline text-primary font-semibold">
-                    <span className="text-right tabular-nums" style={{ marginRight: '12px' }}>{formatMoney(tx.govAmount)}</span>
-                    <span className="text-left" style={{ width: '32px' }}>บาท</span>
-                  </div>
-                </div>
-                <div className="flex justify-between items-baseline w-full">
-                  <span>เรา{tx.userRatio ? ` (${tx.userRatio}%)` : ''}:</span>
-                  <div className="flex justify-end items-baseline font-semibold">
-                    <span className="text-right tabular-nums" style={{ marginRight: '12px' }}>{formatMoney(tx.userAmount)}</span>
-                    <span className="text-left" style={{ width: '32px' }}>บาท</span>
-                  </div>
+
+              <div className="min-w-0">
+                <div className="font-semibold text-base truncate">{tx.title}</div>
+                <div className="flex flex-wrap items-center gap-1.5 mt-1 text-xs text-[var(--text-muted)]">
+                  <span>{format(parseISO(tx.timestamp), 'HH:mm')} น.</span>
+                  {tx.category && (
+                    <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-[var(--text-color)]">
+                      {tx.category}
+                    </span>
+                  )}
+                  {tx.hasSlipImage && (
+                    <span
+                      onClick={handleOpenSlip}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          void handleOpenSlip(e as unknown as React.MouseEvent);
+                        }
+                      }}
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/10 text-[var(--primary-color)] hover:bg-blue-500/20"
+                    >
+                      <FiImage size={11} /> สลิป
+                    </span>
+                  )}
                 </div>
               </div>
-            )}
+            </div>
+
+            <div className="flex flex-col items-end shrink-0 tabular-nums">
+              <div
+                className={`font-bold text-lg ${
+                  tx.type === 'topup' ? 'text-emerald-600 dark:text-emerald-400' : ''
+                }`}
+              >
+                {tx.type === 'topup' ? '+' : '-'}
+                {formatMoney(tx.type === 'topup' ? tx.userAmount : tx.totalAmount)} ฿
+              </div>
+              {tx.type === 'expense' && (
+                <div className="text-xs text-[var(--text-muted)] mt-1 space-y-0.5 text-right">
+                  <div>
+                    รัฐ{tx.govRatio !== undefined ? ` (${tx.govRatio}%)` : ''}:{' '}
+                    <span className="font-semibold text-[var(--primary-color)]">
+                      {formatMoney(tx.govAmount)}
+                    </span>
+                  </div>
+                  <div>
+                    เรา{tx.userRatio !== undefined ? ` (${tx.userRatio}%)` : ''}:{' '}
+                    <span className="font-semibold text-[var(--text-color)]">
+                      {formatMoney(tx.userAmount)}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-        {tx.note && (
-          <div className="text-sm text-muted mt-2 p-2" style={{ background: 'var(--bg-color)', borderRadius: '8px' }}>
-            หมายเหตุ: {tx.note}
+
+          {tx.note && (
+            <div className="mt-2.5 px-3 py-2 rounded-lg bg-[var(--surface-muted)] text-xs text-[var(--text-muted)]">
+              หมายเหตุ: {tx.note}
+            </div>
+          )}
+        </button>
+
+        {isOpen && (
+          <div className="flex border-t border-[var(--card-border)]">
+            <button
+              type="button"
+              onClick={() => onEdit(tx.id)}
+              className="flex-1 py-2.5 flex items-center justify-center gap-2 text-sm font-semibold text-[var(--primary-color)] bg-blue-500/5 hover:bg-blue-500/10 border-r border-[var(--card-border)] cursor-pointer transition"
+            >
+              <FiEdit2 size={15} />
+              แก้ไข
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirmDelete(true)}
+              className="flex-1 py-2.5 flex items-center justify-center gap-2 text-sm font-semibold text-rose-600 dark:text-rose-400 bg-rose-500/5 hover:bg-rose-500/10 cursor-pointer transition"
+            >
+              <FiTrash2 size={15} />
+              ลบ
+            </button>
           </div>
         )}
       </div>
 
-      {isOpen && (
-        <div 
-          className="flex border-t" 
-          style={{ borderColor: 'var(--card-border)' }}
+      <ConfirmModal
+        open={confirmDelete}
+        title="ลบรายการนี้?"
+        description={`ต้องการลบ "${tx.title}" ใช่หรือไม่? ยอดเงินในกระเป๋าและสิทธิ์จะถูกคำนวณกลับให้อัตโนมัติ`}
+        confirmLabel="ลบรายการ"
+        variant="danger"
+        onConfirm={() => {
+          setConfirmDelete(false);
+          onDelete(tx.id);
+        }}
+        onCancel={() => setConfirmDelete(false)}
+      />
+
+      {slipUrl && (
+        <div
+          className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-4"
+          onClick={() => setSlipUrl(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="ภาพสลิปที่บันทึกไว้"
         >
-          <button 
-            onClick={(e) => {
-              e.stopPropagation();
-              onEdit(tx.id);
-            }}
-            className="flex-1 flex items-center justify-center gap-2"
-            style={{ 
-              padding: '12px', 
-              color: 'var(--primary-color)', 
-              background: 'rgba(59, 130, 246, 0.05)',
-              borderRight: '1px solid var(--card-border)',
-              borderRadius: '0 0 0 16px',
-              border: 'none'
-            }}
-          >
-            <FiEdit size={18} />
-            <span className="font-semibold">แก้ไข</span>
-          </button>
-          <button 
-            onClick={(e) => {
-              e.stopPropagation();
-              if (window.confirm('คุณต้องการลบรายการนี้ใช่หรือไม่? ยอดเงินจะถูกคืนเข้ากระเป๋า')) {
-                onDelete(tx.id);
-              }
-            }}
-            className="flex-1 flex items-center justify-center gap-2"
-            style={{ 
-              padding: '12px', 
-              color: 'var(--danger-color)', 
-              background: 'rgba(239, 68, 68, 0.05)',
-              borderRadius: '0 0 16px 0',
-              border: 'none'
-            }}
-          >
-            <FiTrash2 size={18} />
-            <span className="font-semibold">ลบ</span>
-          </button>
+          <div className="relative max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              onClick={() => setSlipUrl(null)}
+              aria-label="ปิดภาพสลิป"
+              className="absolute -top-3 -right-3 w-9 h-9 rounded-full bg-slate-900 text-white flex items-center justify-center shadow-lg cursor-pointer"
+            >
+              <FiX size={18} />
+            </button>
+            <img
+              src={slipUrl}
+              alt={`สลิป ${tx.title}`}
+              className="w-full max-h-[80vh] object-contain rounded-2xl bg-white shadow-2xl"
+            />
+          </div>
         </div>
       )}
-    </div>
+    </>
   );
 };

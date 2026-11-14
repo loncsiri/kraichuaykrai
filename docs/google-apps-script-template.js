@@ -2,8 +2,8 @@
  * Google Apps Script for Kraichuaykrai+ (ใครช่วยใครพลัส)
  * 
  * 1. วางโค้ดนี้ลงใน Apps Script ของ Google Sheets (Extensions > Apps Script)
- * 2. เปลี่ยน SECRET_KEY ด้านล่างให้เป็นรหัสลับของคุณเอง (เพื่อป้องกันคนอื่นแอบยิงข้อมูล)
- * 3. กด Deploy > New deployment
+ * 2. เปลี่ยน SECRET_KEY ด้านล่างให้เป็นรหัสลับของคุณเอง (แนะนำ >= 12 ตัวอักษร)
+ * 3. กด Deploy > New deployment (หรือ Manage deployments > Edit > New version)
  * 4. เลือกประเภท: Web app
  * 5. Execute as: Me
  * 6. Who has access: Anyone
@@ -12,22 +12,28 @@
 
 const SECRET_KEY = "kraichuaykrai-secret-1234"; // ⚠️ เปลี่ยนเป็นรหัสของคุณเอง
 const SHEET_NAME = "Transactions";
+const HEADERS = [
+  "ID", "Timestamp", "Type", "Title", "TotalAmount",
+  "GovAmount", "UserAmount", "GovRatio", "UserRatio",
+  "Category", "Note", "UpdatedAt"
+];
 
 function setupSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let sheet = ss.getSheetByName(SHEET_NAME);
-  
+
   if (!sheet) {
     sheet = ss.insertSheet(SHEET_NAME);
-    // Create headers
-    const headers = ["ID", "Timestamp", "Type", "Title", "TotalAmount", "GovAmount", "UserAmount", "GovRatio", "UserRatio", "Category", "Note"];
-    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
-    sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold").setBackground("#f3f4f6");
+    sheet.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
+    sheet.getRange(1, 1, 1, HEADERS.length).setFontWeight("bold").setBackground("#f3f4f6");
     sheet.setFrozenRows(1);
-    
-    // Set column formats
+
     sheet.getRange("B:B").setNumberFormat("yyyy-MM-dd HH:mm:ss");
     sheet.getRange("E:G").setNumberFormat("#,##0.00");
+  } else if (sheet.getLastColumn() < HEADERS.length) {
+    // Upgrade existing 11-col sheet with UpdatedAt column safely
+    sheet.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
+    sheet.getRange(1, 1, 1, HEADERS.length).setFontWeight("bold").setBackground("#f3f4f6");
   }
   return sheet;
 }
@@ -40,7 +46,6 @@ function doPost(e) {
 
     const data = JSON.parse(e.postData.contents);
 
-    // Verify secret key
     if (data.secretKey !== SECRET_KEY) {
       return response(401, "Unauthorized");
     }
@@ -52,9 +57,9 @@ function doPost(e) {
     const action = data.action;
 
     if (action === 'add') {
-      return handleAdd(sheet, data.payload);
+      return handleUpsert(sheet, data.payload);
     } else if (action === 'update') {
-      return handleUpdate(sheet, data.payload);
+      return handleUpsert(sheet, data.payload);
     } else if (action === 'delete') {
       return handleDelete(sheet, data.payload);
     } else if (action === 'sync') {
@@ -64,15 +69,15 @@ function doPost(e) {
     } else {
       return response(400, "Invalid action");
     }
-
   } catch (error) {
     return response(500, error.toString());
   }
 }
 
-function handleAdd(sheet, tx) {
+function formatRow(tx) {
   const dateObj = tx.timestamp ? new Date(tx.timestamp) : new Date();
-  sheet.appendRow([
+  const updatedAt = tx.updatedAt ? new Date(tx.updatedAt) : new Date();
+  return [
     tx.id,
     dateObj,
     tx.type,
@@ -80,37 +85,26 @@ function handleAdd(sheet, tx) {
     tx.totalAmount,
     tx.govAmount,
     tx.userAmount,
-    tx.govRatio || "",
-    tx.userRatio || "",
+    tx.govRatio !== undefined ? tx.govRatio : "",
+    tx.userRatio !== undefined ? tx.userRatio : "",
     tx.category || "",
-    tx.note || ""
-  ]);
-  return response(200, "Added successfully");
+    tx.note || "",
+    updatedAt
+  ];
 }
 
-function handleUpdate(sheet, tx) {
+// Idempotent upsert (prevents duplicate rows on offline queue retry)
+function handleUpsert(sheet, tx) {
   const data = sheet.getDataRange().getValues();
   for (let i = 1; i < data.length; i++) {
     if (data[i][0] === tx.id) {
       const row = i + 1;
-      const dateObj = tx.timestamp ? new Date(tx.timestamp) : new Date();
-      sheet.getRange(row, 1, 1, 11).setValues([[
-        tx.id,
-        dateObj,
-        tx.type,
-        tx.title,
-        tx.totalAmount,
-        tx.govAmount,
-        tx.userAmount,
-        tx.govRatio || "",
-        tx.userRatio || "",
-        tx.category || "",
-        tx.note || ""
-      ]]);
+      sheet.getRange(row, 1, 1, HEADERS.length).setValues([formatRow(tx)]);
       return response(200, "Updated successfully");
     }
   }
-  return response(404, "Transaction not found");
+  sheet.appendRow(formatRow(tx));
+  return response(200, "Added successfully");
 }
 
 function handleDelete(sheet, payload) {
@@ -121,65 +115,56 @@ function handleDelete(sheet, payload) {
       return response(200, "Deleted successfully");
     }
   }
-  return response(404, "Transaction not found");
+  return response(200, "Already deleted");
 }
 
 function handleSyncAll(sheet, transactions) {
-  // Clear existing data (except header)
   if (sheet.getLastRow() > 1) {
-    sheet.getRange(2, 1, sheet.getLastRow() - 1, 11).clearContent();
+    sheet.getRange(2, 1, sheet.getLastRow() - 1, HEADERS.length).clearContent();
   }
-  
+
   if (transactions && transactions.length > 0) {
-    const rows = transactions.map(tx => [
-      tx.id,
-      tx.timestamp ? new Date(tx.timestamp) : new Date(),
-      tx.type,
-      tx.title,
-      tx.totalAmount,
-      tx.govAmount,
-      tx.userAmount,
-      tx.govRatio || "",
-      tx.userRatio || "",
-      tx.category || "",
-      tx.note || ""
-    ]);
-    sheet.getRange(2, 1, rows.length, 11).setValues(rows);
+    const active = transactions.filter(tx => !tx.deletedAt);
+    if (active.length > 0) {
+      const rows = active.map(formatRow);
+      sheet.getRange(2, 1, rows.length, HEADERS.length).setValues(rows);
+    }
   }
-  
+
   return response(200, "Synced successfully");
 }
 
 function handlePull(sheet) {
   const data = sheet.getDataRange().getValues();
   if (data.length <= 1) return response(200, { transactions: [] });
-  
+
   const transactions = [];
   for (let i = 1; i < data.length; i++) {
     const row = data[i];
+    if (!row[0]) continue;
     transactions.push({
       id: row[0],
       timestamp: row[1] instanceof Date ? row[1].toISOString() : row[1],
       type: row[2],
       title: row[3],
-      totalAmount: row[4] || 0,
-      govAmount: row[5] || 0,
-      userAmount: row[6] || 0,
-      govRatio: row[7] || 0,
-      userRatio: row[8] || 0,
+      totalAmount: Number(row[4]) || 0,
+      govAmount: Number(row[5]) || 0,
+      userAmount: Number(row[6]) || 0,
+      govRatio: row[7] !== "" && row[7] !== undefined ? Number(row[7]) : undefined,
+      userRatio: row[8] !== "" && row[8] !== undefined ? Number(row[8]) : undefined,
       category: row[9] || "",
-      note: row[10] || ""
+      note: row[10] || "",
+      updatedAt: row[11] instanceof Date ? row[11].toISOString() : (row[11] || undefined)
     });
   }
   return response(200, { transactions: transactions });
 }
 
-// Allow CORS preflight requests
-function doOptions(e) {
+function doOptions() {
   return response(200, "OK");
 }
 
-function doGet(e) {
+function doGet() {
   return response(200, "Kraichuaykrai+ Google Sheets API is running");
 }
 
